@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "FleetCore API REST — Módulo 6.2 NestJS",
+    "description": "Colección completa de pruebas para las 7 Épicas y 22 Historias de Usuario de FleetCore",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "adminToken", "value": "" },
+    { "key": "techToken", "value": "" },
+    { "key": "apiKey", "value": "demo-key-partner-1" }
+  ],
+  "item": [
+    {
+      "name": "EPI-01: Autenticación y RBAC",
+      "item": [
+        {
+          "name": "HU-01: Registro de Administrador",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.postman@fleetcore.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "HU-01: Registro de Técnico",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tech.postman@fleetcore.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"TECHNICIAN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "HU-02: Inicio de Sesión ADMIN (Guarda Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('adminToken', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fleetcore.com\",\n  \"password\": \"FleetCore2026!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "HU-02: Inicio de Sesión TECHNICIAN (Guarda Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('techToken', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tecnico1@fleetcore.com\",\n  \"password\": \"FleetCore2026!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "HU-03: Perfil Autenticado (@CurrentUser)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+          }
+        },
+        {
+          "name": "HU-03: Zona Exclusiva ADMIN",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/admin-only", "host": ["{{baseUrl}}"], "path": ["auth", "admin-only"] }
+          }
+        },
+        {
+          "name": "HU-04: Consulta Socio Externo con API Key",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-api-key", "value": "{{apiKey}}" }],
+            "url": { "raw": "{{baseUrl}}/external/vehicles/ABC123/history", "host": ["{{baseUrl}}"], "path": ["external", "vehicles", "ABC123", "history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EPI-02: Flota de Vehículos",
+      "item": [
+        {
+          "name": "HU-05: Registrar Vehículo (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"XYZ999\",\n  \"brand\": \"Volvo\",\n  \"model\": \"FH540\",\n  \"year\": 2023,\n  \"mileage\": 25000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+          }
+        },
+        {
+          "name": "HU-06: Listar Todos los Vehículos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+          }
+        },
+        {
+          "name": "HU-06: Consultar Vehículo por Placa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/vehicles/plate/ABC123", "host": ["{{baseUrl}}"], "path": ["vehicles", "plate", "ABC123"] }
+          }
+        },
+        {
+          "name": "HU-07: Inactivar Vehículo (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/vehicles/1/inactivate", "host": ["{{baseUrl}}"], "path": ["vehicles", "1", "inactivate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EPI-03: Personal Técnico y Mecánicos",
+      "item": [
+        {
+          "name": "HU-08: Registrar Mecánico (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Roberto Morales\",\n  \"email\": \"roberto.morales@fleetcore.com\",\n  \"specialty\": \"Transmisiones Automáticas\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/mechanics", "host": ["{{baseUrl}}"], "path": ["mechanics"] }
+          }
+        },
+        {
+          "name": "HU-09: Listar Mecánicos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/mechanics", "host": ["{{baseUrl}}"], "path": ["mechanics"] }
+          }
+        },
+        {
+          "name": "HU-10: Inactivar Mecánico (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"INACTIVE\"\n}" },
+            "url": { "raw": "{{baseUrl}}/mechanics/1/status", "host": ["{{baseUrl}}"], "path": ["mechanics", "1", "status"] }
+          }
+        },
+        {
+          "name": "HU-11: Validar Disponibilidad y Horarios",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledDate\": \"2026-11-20T08:00:00.000Z\",\n  \"durationMinutes\": 120\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/mechanics/1/validate-availability", "host": ["{{baseUrl}}"], "path": ["mechanics", "1", "validate-availability"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EPI-04: Talleres Mecánicos",
+      "item": [
+        {
+          "name": "HU-12: Registrar Taller (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Taller Occidente Express\",\n  \"address\": \"Transversal 40 # 70-15\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/workshops", "host": ["{{baseUrl}}"], "path": ["workshops"] }
+          }
+        },
+        {
+          "name": "HU-13: Listar Talleres Activos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/workshops/active", "host": ["{{baseUrl}}"], "path": ["workshops", "active"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EPI-05: Ciclo de Vida de Mantenimientos",
+      "item": [
+        {
+          "name": "HU-14: Crear Mantenimiento SCHEDULED (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PREVENTIVE\",\n  \"description\": \"Mantenimiento preventivo general y filtros\",\n  \"mileage\": 60000,\n  \"scheduledDate\": \"2026-11-15T09:00:00.000Z\",\n  \"vehicleId\": 2,\n  \"mechanicId\": 1,\n  \"workshopId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/maintenances", "host": ["{{baseUrl}}"], "path": ["maintenances"] }
+          }
+        },
+        {
+          "name": "HU-15: Iniciar Mantenimiento (Transición a IN_PROGRESS)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/maintenances/1/status", "host": ["{{baseUrl}}"], "path": ["maintenances", "1", "status"] }
+          }
+        },
+        {
+          "name": "HU-16: Liquidar y Completar Mantenimiento (COMPLETED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workDone\": \"Cambio de pastillas y discos de freno delanteros\",\n  \"cost\": 420000,\n  \"finishedAt\": \"2026-11-15T13:00:00.000Z\",\n  \"mileage\": 60250\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/maintenances/1/complete", "host": ["{{baseUrl}}"], "path": ["maintenances", "1", "complete"] }
+          }
+        },
+        {
+          "name": "HU-17: Cancelar Mantenimiento (CANCELLED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\",\n  \"cancellationReason\": \"Cancelación por orden de supervisión\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/maintenances/2/status", "host": ["{{baseUrl}}"], "path": ["maintenances", "2", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EPI-06: Trazabilidad e Historiales",
+      "item": [
+        {
+          "name": "HU-18: Mantenimientos Asignados al Técnico (/my-assigned)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/maintenances/my-assigned", "host": ["{{baseUrl}}"], "path": ["maintenances", "my-assigned"] }
+          }
+        },
+        {
+          "name": "HU-18: Mantenimientos Activos (/active)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/maintenances/active", "host": ["{{baseUrl}}"], "path": ["maintenances", "active"] }
+          }
+        },
+        {
+          "name": "HU-19: Historial Interno de Intervenciones por Vehículo",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/vehicles/1/history", "host": ["{{baseUrl}}"], "path": ["vehicles", "1", "history"] }
+          }
+        }
+      ]
+    }
+  ]
+}

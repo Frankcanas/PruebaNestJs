@@ -1,6 +1,19 @@
 # FleetCore API REST — Módulo 6.2 NestJS
 ### Sistema de Gestión y Control del Ciclo de Vida de Mantenimiento de Flota Vehicular
 
+---
+
+## 👨‍💻 Información del Coder y Entregables
+* **Coder:** Frank Cañas
+* **Clan:** Clan NodeJS
+* **Repositorio de GitHub (Público):** [https://github.com/Frankcanas/PruebaNestJs](https://github.com/Frankcanas/PruebaNestJs)
+* **Dump de Base de Datos:** `fleetcore_dump.sql` (en la raíz del proyecto para carga en Moodle)
+* **Colección de Postman:** `FleetCore_Postman_Collection.json` (en la raíz del proyecto para evidencias de pruebas)
+* **Documentación Swagger UI:** [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+* **Plantilla de Entorno:** `.env.example`
+
+---
+
 API REST modular desarrollada en **NestJS v12**, **TypeScript**, **PostgreSQL** y **TypeORM**, diseñada bajo principios de arquitectura empresarial, control de acceso basado en roles (**RBAC**), autenticación perimetral mediante **JWT** y **API Key**, consistencia transaccional atómica, estandarización de respuestas vía interceptores globales, filtro centralizado de excepciones anti-500, contenedorización con **Docker / Docker Compose**, y documentación interactiva con **Swagger (OpenAPI)**.
 
 ---

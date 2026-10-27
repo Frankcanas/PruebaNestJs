@@ -4,11 +4,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { ExternalModule } from './modules/external/external.module.js';
+import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
+import { MechanicsModule } from './modules/mechanics/mechanics.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { User } from './modules/auth/entities/user.entity.js';
+import { Vehicle } from './modules/vehicles/entities/vehicle.entity.js';
+import { Mechanic } from './modules/mechanics/entities/mechanic.entity.js';
 
 @Module({
   imports: [
@@ -26,12 +30,14 @@ import { User } from './modules/auth/entities/user.entity.js';
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_NAME', 'fleetcore'),
-        entities: [User],
+        entities: [User, Vehicle, Mechanic],
         synchronize: true,
       }),
     }),
     AuthModule,
     ExternalModule,
+    VehiclesModule,
+    MechanicsModule,
   ],
   providers: [
     {

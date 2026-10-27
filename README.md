@@ -55,92 +55,58 @@ npm run start:prod
 
 ---
 
-## Documentación Swagger (OpenAPI)
+## Documentación Swagger UI (OpenAPI)
 
-Con la aplicación en ejecución, la documentación interactiva Swagger se encuentra disponible en:
+Con la aplicación en ejecución (`npm run start:dev`), accede a la interfaz interactiva de Swagger en:
 ```
 http://localhost:3000/api/docs
 ```
+Permite probar interactivamente todos los endpoints, autorizarse mediante el botón **Authorize** con tokens Bearer JWT o la cabecera `x-api-key`.
 
 ---
 
-## Ejecución de Pruebas
+## Ejecución de Pruebas Automatizadas
 
 ```bash
-# Ejecutar suite de pruebas de Épica 1
+# Ejecutar todas las pruebas e2e de Épica 1, Épica 2 y Épica 3
 npm run test:e2e
 
-# Validar código con linter
+# Validar formato y lint
 npm run lint
 ```
 
 ---
 
-## Épica 1: Autenticación, Control de Acceso (RBAC) y Seguridad API Key
+## Resumen de Épicas Implementadas
 
-### HU-01: Registro de Usuarios con Roles Específicos y Hashing Seguro
-- **Endpoint**: `POST /auth/register`
-- **Acceso**: `@Public()`
-- **Entrada**: `{ email: string, password: string, role: 'ADMIN' | 'TECHNICIAN' }`
-- **Salida**: `{ id: number, email: string, role: string, createdAt: string }`
-- **Comportamiento**:
-  - Hashing criptográfico seguro con Bcrypt (10 salt rounds).
-  - Nunca expone la contraseña en la respuesta.
-  - Validación de email duplicado retornando `HTTP 409 Conflict`.
-  - Validación estricta de formato y roles permitidos retornando `HTTP 400 Bad Request`.
+### Épica 1: Autenticación, Control de Acceso (RBAC) y Seguridad API Key
+- `POST /auth/register` — **HU-01**: Registro de usuarios (`ADMIN` o `TECHNICIAN`) con hashing Bcrypt.
+- `POST /auth/login` — **HU-02**: Inicio de sesión y emisión de JWT firmado (`JWT_SECRET`, 1h).
+- `GET /auth/profile` — **HU-03**: Consulta de perfil de usuario autenticado mediante `@CurrentUser()`.
+- `GET /auth/admin-only` — **HU-03**: Endpoint restringido por RBAC a rol `ADMIN`.
+- `GET /auth/technician-only` — **HU-03**: Endpoint restringido por RBAC a rol `TECHNICIAN`.
+- `GET /external/vehicles/:plate/history` — **HU-04**: Integración externa autorizada vía `x-api-key`.
 
-### HU-02: Inicio de Sesión y Emisión de Token JWT
-- **Endpoint**: `POST /auth/login`
-- **Acceso**: `@Public()`
-- **Entrada**: `{ email: string, password: string }`
-- **Salida**: `{ accessToken: string, user: { id: number, email: string, role: string } }`
-- **Comportamiento**:
-  - Verificación contra hash de base de datos.
-  - Generación de token JWT firmado con `JWT_SECRET` y payload `{ sub, email, role }`.
-  - Credenciales inválidas o usuario inexistente retornan `HTTP 401 Unauthorized`.
+### Épica 2: Gestión del Parque Automotor (Flota de Vehículos)
+- `POST /vehicles` — **HU-05**: Alta de vehículos con placa única y estado inicial `AVAILABLE` (ADMIN).
+- `GET /vehicles` — **HU-06**: Listado general de flota de vehículos (ADMIN, TECHNICIAN).
+- `GET /vehicles/:id` — **HU-06**: Consulta de vehículo individual por ID (ADMIN, TECHNICIAN).
+- `GET /vehicles/plate/:plate` — **HU-06**: Búsqueda directa de vehículo por placa (ADMIN, TECHNICIAN).
+- `PATCH /vehicles/:id` — **HU-07**: Actualización de atributos permitidos (ADMIN).
+- `PATCH /vehicles/:id/inactivate` — **HU-07**: Retiro lógico e inactivación (`INACTIVE`) preservando historial (ADMIN).
+- `PATCH /vehicles/:id/status` — **HU-07**: Actualización de estado operativo (ADMIN).
 
-### HU-03: Control de Acceso Basado en Roles (RBAC) y Decoradores Personalizados
-- **Seguridad transversal**: `JwtAuthGuard` + `RolesGuard` aplicados globalmente.
-- **Rutas privadas por defecto**: Cualquier endpoint no marcado con `@Public()` exige un Bearer Token JWT válido en cabecera `Authorization`.
-- **Decoradores Personalizados**:
-  - `@Public()`: Permite acceso no autenticado.
-  - `@Roles(...roles)`: Restringe acceso por roles (`ADMIN`, `TECHNICIAN`).
-  - `@CurrentUser()`: Inyecta el usuario autenticado desde el contexto de la petición.
-- **Respuestas de error**:
-  - Sin token / token corrupto -> `HTTP 401 Unauthorized`.
-  - Rol no autorizado -> `HTTP 403 Forbidden`.
-
-### HU-04: Autenticación para Integraciones Externas mediante API Key
-- **Endpoint**: `GET /external/vehicles/:plate/history`
-- **Seguridad**: `ApiKeyGuard` validando cabecera `x-api-key`.
-- **Comportamiento**:
-  - Valida la clave contra las registradas en `API_KEYS` (.env).
-  - Si es válida -> `HTTP 200 OK`.
-  - Si es inválida o ausente -> `HTTP 401 Unauthorized` con mensaje `'API Key inválida o no proporcionada'`.
+### Épica 3: Gestión de Personal Técnico y Mecánicos
+- `POST /mechanics` — **HU-08**: Alta de mecánicos con correo único, especialidad y estado inicial `ACTIVE` (ADMIN).
+- `GET /mechanics` — **HU-09**: Consulta general de mecánicos registrados (ADMIN, TECHNICIAN).
+- `GET /mechanics/:id` — **HU-09**: Consulta individual y ficha técnica por ID (ADMIN, TECHNICIAN).
+- `PATCH /mechanics/:id` — **HU-10**: Actualización de datos del mecánico (ADMIN).
+- `PATCH /mechanics/:id/status` — **HU-10**: Activación o inactivación lógica preservando historial (ADMIN).
+- `POST /mechanics/:id/validate-availability` — **HU-11**: Validación de disponibilidad y no cruce de horarios (ADMIN, TECHNICIAN).
 
 ---
 
 ## Estándares Transversales Implementados
 
-- **HU-20: Interceptor Global (`ResponseTransformInterceptor`)**:
-  Estandariza todas las respuestas exitosas:
-  ```json
-  {
-    "success": true,
-    "statusCode": 200,
-    "data": { ... },
-    "timestamp": "2026-10-27T08:00:00.000Z"
-  }
-  ```
-
-- **HU-21: Exception Filter Global Anti-500 (`HttpExceptionFilter`)**:
-  Centraliza y formatea todas las excepciones evitando errores 500 no controlados:
-  ```json
-  {
-    "success": false,
-    "statusCode": 409,
-    "message": "El correo electrónico ya se encuentra registrado",
-    "path": "/auth/register",
-    "timestamp": "2026-10-27T08:00:00.000Z"
-  }
-  ```
+- **HU-20: Interceptor Global (`ResponseTransformInterceptor`)**: Formato uniforme `{ success: true, statusCode, data, timestamp }`.
+- **HU-21: Exception Filter Global Anti-500 (`HttpExceptionFilter`)**: Formato uniforme `{ success: false, statusCode, message, path, timestamp }`.

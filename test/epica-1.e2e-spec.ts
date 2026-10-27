@@ -275,12 +275,12 @@ describe('ÉPICA 1: Autenticación, Control de Acceso (RBAC) y Seguridad API Key
 
     it('Escenario 1: Acceso Autorizado con segunda x-api-key Válida', async () => {
       const response = await request(app.getHttpServer())
-        .get('/external/vehicles/XYZ789/history')
+        .get('/external/vehicles/ABC123/history')
         .set('x-api-key', 'demo-key-partner-2');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data.vehicle.plate).toBe('XYZ789');
+      expect(response.body.data.vehicle.plate).toBe('ABC123');
     });
 
     it('Escenario 2: Denegación de Acceso por API Key Inválida', async () => {

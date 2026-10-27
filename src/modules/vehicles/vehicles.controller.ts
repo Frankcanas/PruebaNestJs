@@ -22,7 +22,7 @@ import { UpdateVehicleDto } from './dto/update-vehicle.dto.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../common/enums/user-role.enum.js';
 
-@ApiTags('Gestión de Vehículos (EPI-02)')
+@ApiTags('Gestión de Vehículos (EPI-02 y EPI-06)')
 @ApiBearerAuth()
 @Controller('vehicles')
 export class VehiclesController {
@@ -96,6 +96,30 @@ export class VehiclesController {
   })
   async findByPlate(@Param('plate') plate: string) {
     return this.vehiclesService.findByPlate(plate);
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  @Get(':id/history')
+  @ApiOperation({
+    summary: 'HU-19: Historial de Intervenciones por Vehículo (Interno)',
+    description:
+      'Permite a Administradores y Técnicos consultar el historial completo de intervenciones técnicas asociadas a un vehículo.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Identificador del vehículo',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de intervenciones obtenido exitosamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Vehículo no encontrado',
+  })
+  async getHistory(@Param('id', ParseIntPipe) id: number) {
+    return this.vehiclesService.getHistory(id);
   }
 
   @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)

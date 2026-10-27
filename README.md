@@ -6,6 +6,7 @@ Sistema de Gestión y Control del Ciclo de Vida de Mantenimiento de Flota Vehicu
 - **NestJS v12**
 - **TypeScript**
 - **PostgreSQL & TypeORM**
+- **Docker & Docker Compose**
 - **JWT (JSON Web Token) & Passport**
 - **Bcrypt (Hashing Seguro)**
 - **Class-Validator & Class-Transformer**
@@ -37,6 +38,30 @@ API_KEYS=demo-key-partner-1,demo-key-partner-2
 
 ---
 
+## Despliegue con Docker y Docker Compose (Punto Extra)
+
+La aplicación cuenta con empaquetamiento multi-etapa en `Dockerfile` y orquestación integral con `docker-compose.yml`:
+
+```bash
+# Construir y levantar servicios en segundo plano
+docker compose up --build -d
+
+# Ver logs de la API y de PostgreSQL
+docker compose logs -f api
+
+# Ejecutar el seeder dentro del contenedor
+docker compose exec api node dist/seed.js
+
+# Detener los contenedores
+docker compose down
+```
+
+### Puertos Expuestos en Docker:
+- **API REST & Swagger**: `http://localhost:3000` | Swagger: `http://localhost:3000/api/docs`
+- **PostgreSQL**: `localhost:5433` (mapeado para evitar colisiones con el puerto host)
+
+---
+
 ## Poblado de Base de Datos (Seeder Idempotente)
 
 Para poblar la base de datos con el dataset requerido de prueba de forma **idempotente** (sin duplicar registros si se ejecuta varias veces):
@@ -55,7 +80,7 @@ El seeder inicializa exactamente:
 
 ---
 
-## Instalación y Ejecución
+## Instalación y Ejecución Local
 
 ```bash
 # Instalar dependencias
@@ -75,7 +100,7 @@ npm run start:prod
 
 ## Documentación Swagger UI (OpenAPI)
 
-Con la aplicación en ejecución (`npm run start:dev`), accede a la interfaz interactiva de Swagger en:
+Con la aplicación en ejecución (`npm run start:dev` o vía Docker), accede a la interfaz interactiva de Swagger en:
 ```
 http://localhost:3000/api/docs
 ```

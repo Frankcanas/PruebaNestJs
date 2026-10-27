@@ -8,17 +8,20 @@ import {
 } from '@nestjs/swagger';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard.js';
 import { Public } from '../../common/decorators/public.decorator.js';
+import { VehiclesService } from '../vehicles/vehicles.service.js';
 
-@ApiTags('Integraciones Externas (EPI-01)')
+@ApiTags('Integraciones Externas (EPI-01 y EPI-06)')
 @Controller('external')
 export class ExternalController {
+  constructor(private readonly vehiclesService: VehiclesService) {}
+
   @Public()
   @UseGuards(ApiKeyGuard)
   @Get('vehicles/:plate/history')
   @ApiOperation({
-    summary: 'HU-04: Autenticación para Integraciones Externas mediante API Key',
+    summary: 'HU-04 y HU-19: Historial de Intervenciones por Vehículo para Socios Externos',
     description:
-      'Endpoint protegido con x-api-key para que socios satélite consulten historial de vehículos.',
+      'Endpoint protegido con cabecera x-api-key para que socios autorizados consulten vehículo e historial de intervenciones.',
   })
   @ApiHeader({
     name: 'x-api-key',
@@ -32,19 +35,17 @@ export class ExternalController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Consulta exitosa por socio externo autorizado',
+    description: 'Historial de intervenciones obtenido exitosamente',
   })
   @ApiResponse({
     status: 401,
     description: 'API Key inválida o no proporcionada',
   })
-  getVehicleHistory(@Param('plate') plate: string) {
-    return {
-      vehicle: {
-        plate,
-        status: 'AVAILABLE',
-      },
-      maintenances: [],
-    };
+  @ApiResponse({
+    status: 404,
+    description: 'Vehículo no encontrado',
+  })
+  async getVehicleHistory(@Param('plate') plate: string) {
+    return this.vehiclesService.getHistoryByPlate(plate);
   }
 }

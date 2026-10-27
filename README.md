@@ -22,7 +22,7 @@ Crear un archivo `.env` en la raíz del proyecto tomando como plantilla `.env.ex
 cp .env.example .env
 ```
 
-Contenido de `.env`:
+Contenido oficial de `.env`:
 ```env
 PORT=3000
 DB_HOST=localhost
@@ -34,6 +34,24 @@ JWT_SECRET=cambia-este-secreto
 JWT_EXPIRES_IN=1h
 API_KEYS=demo-key-partner-1,demo-key-partner-2
 ```
+
+---
+
+## Poblado de Base de Datos (Seeder Idempotente)
+
+Para poblar la base de datos con el dataset requerido de prueba de forma **idempotente** (sin duplicar registros si se ejecuta varias veces):
+
+```bash
+npm run seed
+```
+
+El seeder inicializa exactamente:
+- **1 Usuario ADMIN** (`admin@fleetcore.com` / `FleetCore2026!`)
+- **2 Usuarios TECHNICIAN** (`tecnico1@fleetcore.com`, `tecnico2@fleetcore.com` / `FleetCore2026!`)
+- **3 Mecánicos** (2 activos vinculados a los técnicos y 1 inactivo)
+- **2 Talleres** (1 activo y 1 inactivo)
+- **4 Vehículos** (2 AVAILABLE, 1 IN_MAINTENANCE con orden IN_PROGRESS, y 1 INACTIVE)
+- **Mantenimientos** (1 COMPLETED para historial y 1 IN_PROGRESS)
 
 ---
 
@@ -61,14 +79,14 @@ Con la aplicación en ejecución (`npm run start:dev`), accede a la interfaz int
 ```
 http://localhost:3000/api/docs
 ```
-Permite probar interactivamente todos los endpoints, autorizarse mediante el botón **Authorize** con tokens Bearer JWT o la cabecera `x-api-key`.
+Permite probar interactivamente los **26 endpoints** de la plataforma, autorizándose mediante el botón **Authorize** con tokens Bearer JWT o la cabecera `x-api-key`.
 
 ---
 
 ## Ejecución de Pruebas Automatizadas
 
 ```bash
-# Ejecutar todas las pruebas e2e de Épica 1 a Épica 5
+# Ejecutar todas las suites de prueba e2e (Épicas 1 a 7)
 npm run test:e2e
 
 # Validar formato y lint
@@ -121,9 +139,14 @@ npm run lint
 - `PATCH /maintenances/:id/status` — **HU-15 & HU-17**: Transición a `IN_PROGRESS` (con cambio atómico de vehículo a `IN_MAINTENANCE`) o a `CANCELLED` (con liberación a `AVAILABLE`) (ADMIN, TECHNICIAN).
 - `PATCH /maintenances/:id/complete` — **HU-16**: Cierre y liquidación técnica obligatoria (trabajo realizado, costo, fecha y odómetro), liberando vehículo a `AVAILABLE` de forma irreversible (ADMIN, TECHNICIAN).
 
----
+### Épica 6: Trazabilidad, Historiales e Integración de Socios Externos
+- `GET /maintenances` — **HU-18**: Monitoreo global de órdenes con filtros de estado, vehículo y mecánico (ADMIN).
+- `GET /maintenances/my-assigned` — **HU-18**: Consulta de agenda y asignaciones individuales del técnico autenticado (TECHNICIAN).
+- `GET /maintenances/active` — **HU-18**: Filtro rápido de intervenciones activas (ADMIN, TECHNICIAN).
+- `GET /external/vehicles/:plate/history` — **HU-19**: Consulta externa de historial con cabecera `x-api-key` autorizada.
+- `GET /vehicles/:id/history` — **HU-19**: Consulta interna autenticada de historial de intervenciones por vehículo.
 
-## Estándares Transversales Implementados
-
+### Épica 7: Arquitectura Transversal, Persistencia, Filtros y Seeders
 - **HU-20: Interceptor Global (`ResponseTransformInterceptor`)**: Formato uniforme `{ success: true, statusCode, data, timestamp }`.
 - **HU-21: Exception Filter Global Anti-500 (`HttpExceptionFilter`)**: Formato uniforme `{ success: false, statusCode, message, path, timestamp }`.
+- **HU-22: Variables de Entorno, Documentación Swagger y Seeder Idempotente**: Dataset mínimo verificado, `.env.example`, y CLI `npm run seed`.

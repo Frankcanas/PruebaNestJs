@@ -68,7 +68,7 @@ Permite probar interactivamente todos los endpoints, autorizarse mediante el bot
 ## Ejecución de Pruebas Automatizadas
 
 ```bash
-# Ejecutar todas las pruebas e2e de Épica 1, Épica 2 y Épica 3
+# Ejecutar todas las pruebas e2e de Épica 1 a Épica 5
 npm run test:e2e
 
 # Validar formato y lint
@@ -103,6 +103,23 @@ npm run lint
 - `PATCH /mechanics/:id` — **HU-10**: Actualización de datos del mecánico (ADMIN).
 - `PATCH /mechanics/:id/status` — **HU-10**: Activación o inactivación lógica preservando historial (ADMIN).
 - `POST /mechanics/:id/validate-availability` — **HU-11**: Validación de disponibilidad y no cruce de horarios (ADMIN, TECHNICIAN).
+
+### Épica 4: Gestión de Talleres y Centros de Operación
+- `POST /workshops` — **HU-12**: Registro y alta de talleres con estado inicial `ACTIVE` (ADMIN).
+- `GET /workshops` — **HU-13**: Consulta general y filtrado de talleres con query `?status=ACTIVE` (ADMIN, TECHNICIAN).
+- `GET /workshops/active` — **HU-13**: Ruta dedicada para consulta de talleres activos (ADMIN, TECHNICIAN).
+- `GET /workshops/:id` — **HU-13**: Consulta de taller por ID (ADMIN, TECHNICIAN).
+- `PATCH /workshops/:id` — **HU-12**: Actualización de nombre y dirección del taller (ADMIN).
+- `PATCH /workshops/:id/status` — **HU-12**: Activación / inactivación lógica del taller (ADMIN).
+
+### Épica 5: Planificación, Ejecución y Ciclo de Vida de Mantenimientos
+- `POST /maintenances` — **HU-14**: Creación y programación de mantenimiento con validaciones de kilometraje, estado de vehículos, mecánicos, talleres y no cruce de horarios (ADMIN).
+- `GET /maintenances` — Consulta general de mantenimientos con soporte de filtros (ADMIN, TECHNICIAN).
+- `GET /maintenances/active` — Consulta de mantenimientos en curso o programados (`SCHEDULED`, `IN_PROGRESS`) (ADMIN, TECHNICIAN).
+- `GET /maintenances/my-assigned` — Agenda técnica del técnico autenticado (ADMIN, TECHNICIAN).
+- `GET /maintenances/:id` — Consulta detallada de mantenimiento por ID (ADMIN, TECHNICIAN).
+- `PATCH /maintenances/:id/status` — **HU-15 & HU-17**: Transición a `IN_PROGRESS` (con cambio atómico de vehículo a `IN_MAINTENANCE`) o a `CANCELLED` (con liberación a `AVAILABLE`) (ADMIN, TECHNICIAN).
+- `PATCH /maintenances/:id/complete` — **HU-16**: Cierre y liquidación técnica obligatoria (trabajo realizado, costo, fecha y odómetro), liberando vehículo a `AVAILABLE` de forma irreversible (ADMIN, TECHNICIAN).
 
 ---
 

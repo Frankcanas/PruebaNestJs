@@ -9,12 +9,15 @@ import { Vehicle } from './entities/vehicle.entity.js';
 import { CreateVehicleDto } from './dto/create-vehicle.dto.js';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto.js';
 import { VehicleStatus } from '../../common/enums/vehicle-status.enum.js';
+import { Maintenance } from '../maintenances/entities/maintenance.entity.js';
 
 @Injectable()
 export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
     private readonly vehicleRepository: Repository<Vehicle>,
+    @InjectRepository(Maintenance)
+    private readonly maintenanceRepository: Repository<Maintenance>,
   ) {}
 
   async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
@@ -81,5 +84,47 @@ export class VehiclesService {
 
     vehicle.status = VehicleStatus.INACTIVE;
     return this.vehicleRepository.save(vehicle);
+  }
+
+  async getHistory(id: number) {
+    const vehicle = await this.findById(id);
+    const maintenances = await this.maintenanceRepository.find({
+      where: { vehicleId: id },
+      relations: { mechanic: true, workshop: true },
+      order: { scheduledDate: 'DESC' },
+    });
+
+    return {
+      vehicle: {
+        id: vehicle.id,
+        plate: vehicle.plate,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        available: vehicle.status === VehicleStatus.AVAILABLE,
+        status: vehicle.status,
+      },
+      maintenances,
+    };
+  }
+
+  async getHistoryByPlate(plate: string) {
+    const vehicle = await this.findByPlate(plate);
+    const maintenances = await this.maintenanceRepository.find({
+      where: { vehicleId: vehicle.id },
+      relations: { mechanic: true, workshop: true },
+      order: { scheduledDate: 'DESC' },
+    });
+
+    return {
+      vehicle: {
+        id: vehicle.id,
+        plate: vehicle.plate,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        available: vehicle.status === VehicleStatus.AVAILABLE,
+        status: vehicle.status,
+      },
+      maintenances,
+    };
   }
 }
